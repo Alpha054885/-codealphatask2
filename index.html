@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Portfolio Tracker | Task 2</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #131b2e;
+      --card-border: #222f4c;
+      --card-hover: #1c2742;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --primary: #38bdf8;
+      --primary-hover: #0284c7;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --accent: #818cf8;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 30px 16px;
+      display: flex;
+      justify-content: center;
+      line-height: 1.5;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1000px;
+      display: flex;
+      flex-direction: column;
+      gap: 22px;
+    }
+
+    /* Top Navigation / Header */
+    header {
+      background: linear-gradient(135deg, #131b2e 0%, #0d1527 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px 28px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    }
+
+    .header-title h1 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-title p {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      margin-top: 4px;
+    }
+
+    .badge-task {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(56, 189, 248, 0.12);
+      color: #38bdf8;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+    }
+
+    .metric-card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 18px 20px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+
+    .metric-card .label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 600;
+    }
+
+    .metric-card .value {
+      font-size: 1.75rem;
+      font-weight: 800;
+      margin-top: 6px;
+      color: #ffffff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .metric-card.total-value .value {
+      color: #38bdf8;
+    }
+
+    /* Main Grid */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.55fr;
+      gap: 22px;
+    }
+
+    @media (max-width: 860px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: #ffffff;
+    }
+
+    /* Stock Catalog / Badges */
+    .stock-badges {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .stock-badge-btn {
+      background: #0d1527;
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      transition: all 0.2s ease;
+      text-align: left;
+    }
+
+    .stock-badge-btn:hover {
+      border-color: var(--primary);
+      background: var(--card-hover);
+      transform: translateY(-2px);
+    }
+
+    .stock-badge-btn.active {
+      border-color: var(--primary);
+      background: rgba(56, 189, 248, 0.15);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+    }
+
+    .stock-badge-btn .ticker {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: #ffffff;
+    }
+
+    .stock-badge-btn .price {
+      font-size: 0.85rem;
+      color: #38bdf8;
+      font-weight: 600;
+    }
+
+    /* Form Styles */
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    select, input[type="text"], input[type="number"] {
+      width: 100%;
+      background: #0b1120;
+      border: 1px solid var(--card-border);
+      color: #ffffff;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    select:focus, input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.92rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      border: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: #0284c7;
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: #0369a1;
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background: #334155;
+      color: #ffffff;
+    }
+
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      padding: 4px 10px;
+      font-size: 0.78rem;
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+      color: #ffffff;
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    /* Preset Test Buttons */
+    .presets {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-preset {
+      flex: 1;
+      min-width: 130px;
+      font-size: 0.8rem;
+      padding: 8px 12px;
+      background: #0d1527;
+      border: 1px dashed var(--card-border);
+      color: var(--text-muted);
+    }
+
+    .btn-preset:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: rgba(56, 189, 248, 0.08);
+    }
+
+    /* Table */
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+
+    th {
+      background: #0a0f1d;
+      padding: 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 2px solid var(--card-border);
+    }
+
+    td {
+      padding: 13px 12px;
+      border-bottom: 1px solid var(--card-border);
+      font-size: 0.92rem;
+    }
+
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .text-right {
+      text-align: right;
+    }
+
+    .stock-cell {
+      font-weight: 700;
+      color: #ffffff;
+    }
+
+    .price-cell {
+      font-variant-numeric: tabular-nums;
+      color: #cbd5e1;
+    }
+
+    .value-cell {
+      font-variant-numeric: tabular-nums;
+      font-weight: 700;
+      color: #38bdf8;
+    }
+
+    tfoot td {
+      font-weight: 700;
+      font-size: 1rem;
+      border-top: 2px solid var(--card-border);
+      border-bottom: none;
+      background: #0a0f1d;
+      color: #ffffff;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-state svg {
+      width: 44px;
+      height: 44px;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    /* Action bar */
+    .export-section {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+      padding-top: 18px;
+      border-top: 1px solid var(--card-border);
+    }
+
+    /* Terminal Report Box */
+    .report-box {
+      background: #050811;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.84rem;
+      color: #38bdf8;
+      white-space: pre;
+      overflow-x: auto;
+      line-height: 1.45;
+      margin-top: 16px;
+      display: none;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      color: #ffffff;
+      border: 1px solid var(--primary);
+      padding: 12px 20px;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      font-size: 0.9rem;
+      display: none;
+      z-index: 1000;
+    }
+
+    .toast.show {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="header-title">
+        <h1>📊 Stock Portfolio Tracker</h1>
+        <p>Python Programming Internship – Task 2 (Predefined Prices & Calculator)</p>
+      </div>
+      <div class="badge-task">Task 2 Verified</div>
+    </header>
+
+    <!-- Metrics Cards -->
+    <div class="metrics-grid">
+      <div class="metric-card total-value">
+        <div class="label">Grand Total Investment</div>
+        <div class="value" id="grandTotal">$0.00</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Stocks in Portfolio</div>
+        <div class="value" id="stockCount">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Total Shares Purchased</div>
+        <div class="value" id="totalShares">0</div>
+      </div>
+      <div class="metric-card">
+        <div class="label">Largest Investment</div>
+        <div class="value" id="topHolding" style="font-size: 1.35rem;">-</div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-grid">
+      <!-- Input Panel -->
+      <div class="card">
+        <div class="card-title">
+          <span>Add Stock to Portfolio</span>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+          Predefined Stock Catalog (Click to select):
+        </p>
+
+        <!-- Quick Select Badges -->
+        <div class="stock-badges" id="stockBadges">
+          <!-- Rendered via JavaScript -->
+        </div>
+
+        <form id="stockForm" onsubmit="handleAddStock(event)">
+          <div class="form-group">
+            <label for="stockSelect">Stock Symbol</label>
+            <select id="stockSelect" onchange="onStockSelectChange()">
+              <option value="AAPL">AAPL - Apple Inc. ($180)</option>
+              <option value="TSLA">TSLA - Tesla Inc. ($250)</option>
+              <option value="GOOGL">GOOGL - Alphabet Inc. ($150)</option>
+              <option value="MSFT">MSFT - Microsoft Corp. ($300)</option>
+              <option value="AMZN">AMZN - Amazon.com Inc. ($200)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="stockQty">Quantity Purchased (Positive Whole Number)</label>
+            <input type="number" id="stockQty" placeholder="e.g. 5" min="1" step="1" required>
+          </div>
+
+          <button type="submit" class="btn btn-primary btn-block">
+            ➕ Add to Portfolio
+          </button>
+        </form>
+
+        <!-- Test Case Presets -->
+        <div style="margin-top: 20px; padding-top: 14px; border-top: 1px solid var(--card-border);">
+          <label>Quick Test Presets (from Task Instructions):</label>
+          <div class="presets">
+            <button class="btn btn-preset" onclick="loadTest1()">
+              🧪 Test 1: AAPL (5) + TSLA (2) = $1,400
+            </button>
+            <button class="btn btn-preset" onclick="loadTest2()">
+              🧪 Test 2: GOOGL (3) + MSFT (2) = $1,050
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Portfolio Table Panel -->
+      <div class="card">
+        <div class="card-title">
+          <span>Portfolio Summary</span>
+          <button class="btn btn-secondary" style="font-size: 0.8rem; padding: 6px 12px;" onclick="clearPortfolio()">
+            🗑️ Clear Portfolio
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table id="portfolioTable">
+            <thead>
+              <tr>
+                <th>Stock Name</th>
+                <th class="text-right">Price ($)</th>
+                <th class="text-right">Quantity</th>
+                <th class="text-right">Investment ($)</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Rendered via JS -->
+            </tbody>
+            <tfoot id="tableFoot" style="display: none;">
+              <tr>
+                <td colspan="3">GRAND TOTAL INVESTMENT</td>
+                <td class="text-right value-cell" id="tableTotal">$0.00</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+          <div id="emptyState" class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <p>Your portfolio is currently empty.</p>
+            <p style="font-size: 0.8rem; margin-top: 4px;">Choose a stock and quantity to get started!</p>
+          </div>
+        </div>
+
+        <!-- Action / Export Buttons -->
+        <div class="export-section">
+          <button class="btn btn-secondary" onclick="exportReportTXT()">
+            💾 Save portfolio_report.txt
+          </button>
+          <button class="btn btn-secondary" onclick="toggleAsciiReport()">
+            💻 View Terminal Output
+          </button>
+          <button class="btn btn-secondary" onclick="copyReportToClipboard()">
+            📋 Copy Report
+          </button>
+        </div>
+
+        <!-- Terminal View Output -->
+        <div id="asciiReportBox" class="report-box"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Stock added!</div>
+
+  <script>
+    // Predefined Stock Prices strictly matching Python script
+    const STOCK_PRICES = {
+      "AAPL": 180,
+      "TSLA": 250,
+      "GOOGL": 150,
+      "MSFT": 300,
+      "AMZN": 200
+    };
+
+    // User's portfolio list: array of { symbol, price, quantity, investment }
+    let portfolio = [];
+
+    // Load saved portfolio from localStorage or load default Test 1
+    function loadSavedPortfolio() {
+      try {
+        const saved = localStorage.getItem("stock_portfolio_task2");
+        if (saved) {
+          portfolio = JSON.parse(saved);
+        } else {
+          // Default initial load: Test 1 (AAPL 5, TSLA 2)
+          portfolio = [
+            { symbol: "AAPL", price: 180, quantity: 5, investment: 900 },
+            { symbol: "TSLA", price: 250, quantity: 2, investment: 500 }
+          ];
+        }
+      } catch (e) {
+        portfolio = [];
+      }
+      render();
+    }
+
+    function savePortfolio() {
+      localStorage.setItem("stock_portfolio_task2", JSON.stringify(portfolio));
+    }
+
+    // Render quick-select badges
+    function renderStockBadges() {
+      const container = document.getElementById("stockBadges");
+      container.innerHTML = "";
+      for (const [ticker, price] of Object.entries(STOCK_PRICES)) {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "stock-badge-btn";
+        btn.id = "badge-" + ticker;
+        btn.innerHTML = `<span class="ticker">${ticker}</span><span class="price">$${price.toFixed(2)}</span>`;
+        btn.onclick = () => selectTicker(ticker);
+        container.appendChild(btn);
+      }
+    }
+
+    function selectTicker(ticker) {
+      const select = document.getElementById("stockSelect");
+      select.value = ticker;
+      document.querySelectorAll(".stock-badge-btn").forEach(btn => btn.classList.remove("active"));
+      const activeBadge = document.getElementById("badge-" + ticker);
+      if (activeBadge) activeBadge.classList.add("active");
+      document.getElementById("stockQty").focus();
+    }
+
+    function onStockSelectChange() {
+      const select = document.getElementById("stockSelect");
+      document.querySelectorAll(".stock-badge-btn").forEach(btn => btn.classList.remove("active"));
+      const activeBadge = document.getElementById("badge-" + select.value);
+      if (activeBadge) activeBadge.classList.add("active");
+    }
+
+    function handleAddStock(e) {
+      e.preventDefault();
+      const select = document.getElementById("stockSelect");
+      const ticker = select.value.toUpperCase();
+      const price = STOCK_PRICES[ticker];
+      const qtyInput = document.getElementById("stockQty");
+      const qty = parseInt(qtyInput.value, 10);
+
+      if (isNaN(qty) || qty <= 0) {
+        showToast("Error: Quantity must be a positive whole number.");
+        return;
+      }
+
+      // Check if stock already exists in portfolio
+      const existing = portfolio.find(item => item.symbol === ticker);
+      if (existing) {
+        existing.quantity += qty;
+        existing.investment = existing.quantity * existing.price;
+        showToast(`Updated ${ticker}: Now ${existing.quantity} shares ($${existing.investment.toFixed(2)})`);
+      } else {
+        portfolio.push({
+          symbol: ticker,
+          price: price,
+          quantity: qty,
+          investment: price * qty
+        });
+        showToast(`Added ${qty} x ${ticker} = $${(price * qty).toFixed(2)}`);
+      }
+
+      savePortfolio();
+      render();
+      qtyInput.value = "";
+    }
+
+    function deleteStock(index) {
+      const removed = portfolio.splice(index, 1);
+      savePortfolio();
+      render();
+      showToast(`Removed ${removed[0].symbol}`);
+    }
+
+    function clearPortfolio() {
+      if (portfolio.length === 0) return;
+      portfolio = [];
+      savePortfolio();
+      render();
+      showToast("Portfolio cleared.");
+    }
+
+    // Presets
+    function loadTest1() {
+      portfolio = [
+        { symbol: "AAPL", price: 180, quantity: 5, investment: 900 },
+        { symbol: "TSLA", price: 250, quantity: 2, investment: 500 }
+      ];
+      savePortfolio();
+      render();
+      showToast("Loaded Test 1: AAPL (5) + TSLA (2) = $1,400.00");
+    }
+
+    function loadTest2() {
+      portfolio = [
+        { symbol: "GOOGL", price: 150, quantity: 3, investment: 450 },
+        { symbol: "MSFT", price: 300, quantity: 2, investment: 600 }
+      ];
+      savePortfolio();
+      render();
+      showToast("Loaded Test 2: GOOGL (3) + MSFT (2) = $1,050.00");
+    }
+
+    // Build ASCII Report strictly matching stock_tracker.py & portfolio_report.txt
+    function buildAsciiReportString(grandTotal) {
+      const lines = [];
+      lines.push("==============================================================");
+      lines.push("                 STOCK PORTFOLIO SUMMARY");
+      lines.push("==============================================================");
+      lines.push("Stock Name   | Price ($)    | Quantity   | Investment ($) ");
+      lines.push("--------------------------------------------------------------");
+
+      portfolio.forEach(item => {
+        const sym = item.symbol.padEnd(12);
+        const pr = ("$" + item.price.toFixed(2)).padEnd(12);
+        const qt = item.quantity.toString().padEnd(10);
+        const inv = ("$" + item.investment.toFixed(2)).padEnd(14);
+        lines.push(`${sym} | ${pr} | ${qt} | ${inv}`);
+      });
+
+      lines.push("--------------------------------------------------------------");
+      lines.push(`GRAND TOTAL INVESTMENT:                | $${grandTotal.toFixed(2)}`);
+      lines.push("==============================================================");
+      lines.push("");
+      lines.push("Report generated successfully by Stock Portfolio Tracker.");
+      return lines.join("\n");
+    }
+
+    function updateAsciiReport(totalVal) {
+      const box = document.getElementById("asciiReportBox");
+      if (portfolio.length === 0) {
+        box.innerText = "No stocks in portfolio.";
+      } else {
+        box.innerText = buildAsciiReportString(totalVal);
+      }
+    }
+
+    function toggleAsciiReport() {
+      const box = document.getElementById("asciiReportBox");
+      box.style.display = (box.style.display === "none" || !box.style.display) ? "block" : "none";
+    }
+
+    // Export strictly matching portfolio_report.txt
+    function exportReportTXT() {
+      if (portfolio.length === 0) {
+        showToast("Portfolio is empty. Add stocks first!");
+        return;
+      }
+      const total = portfolio.reduce((acc, cur) => acc + cur.investment, 0);
+      const content = buildAsciiReportString(total);
+      downloadFile(content, "portfolio_report.txt", "text/plain;charset=utf-8;");
+      showToast("Successfully downloaded 'portfolio_report.txt'!");
+    }
+
+    function copyReportToClipboard() {
+      if (portfolio.length === 0) {
+        showToast("Portfolio is empty!");
+        return;
+      }
+      const total = portfolio.reduce((acc, cur) => acc + cur.investment, 0);
+      const content = buildAsciiReportString(total);
+      navigator.clipboard.writeText(content).then(() => {
+        showToast("Copied portfolio report to clipboard!");
+      });
+    }
+
+    function downloadFile(content, fileName, mimeType) {
+      const blob = new Blob([content], { type: mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById("toast");
+      toast.innerText = msg;
+      toast.classList.add("show");
+      setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3200);
+    }
+
+    // Render UI state
+    function render() {
+      const tableBody = document.getElementById("tableBody");
+      const emptyState = document.getElementById("emptyState");
+      const tableFoot = document.getElementById("tableFoot");
+
+      tableBody.innerHTML = "";
+
+      let totalVal = 0;
+      let totalSharesCount = 0;
+      let topItem = null;
+      let maxVal = -1;
+
+      if (portfolio.length === 0) {
+        emptyState.style.display = "block";
+        tableFoot.style.display = "none";
+      } else {
+        emptyState.style.display = "none";
+        tableFoot.style.display = "table-footer-group";
+
+        portfolio.forEach((item, index) => {
+          totalVal += item.investment;
+          totalSharesCount += item.quantity;
+          if (item.investment > maxVal) {
+            maxVal = item.investment;
+            topItem = item.symbol;
+          }
+
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td class="stock-cell">${item.symbol}</td>
+            <td class="text-right price-cell">$${item.price.toFixed(2)}</td>
+            <td class="text-right price-cell">${item.quantity}</td>
+            <td class="text-right value-cell">$${item.investment.toFixed(2)}</td>
+            <td class="text-right">
+              <button class="btn btn-danger" onclick="deleteStock(${index})">Remove</button>
+            </td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+
+      document.getElementById("grandTotal").innerText = `$${totalVal.toFixed(2)}`;
+      document.getElementById("tableTotal").innerText = `$${totalVal.toFixed(2)}`;
+      document.getElementById("stockCount").innerText = portfolio.length;
+      document.getElementById("totalShares").innerText = totalSharesCount;
+      document.getElementById("topHolding").innerText = topItem ? `${topItem} ($${maxVal.toFixed(2)})` : "-";
+
+      updateAsciiReport(totalVal);
+    }
+
+    // Initial setup
+    renderStockBadges();
+    selectTicker("AAPL");
+    loadSavedPortfolio();
+  </script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+# Stock Portfolio Tracker - Requirements
+#
+# No external dependencies or third-party packages are required.
+# This project uses Python's built-in standard library exclusively:
+# - os
+# - sys (optional)
+#
+# Minimum Recommended Python Version: Python 3.6 or higher.
